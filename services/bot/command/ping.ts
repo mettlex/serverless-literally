@@ -11,7 +11,7 @@ export const command: Command = {
     logger.info(typeof interaction);
     logger.info({ interaction });
 
-    await sleep(1000);
+    await sleep(200);
 
     try {
       const result = await bot.rest.sendFollowupMessage(interaction.token, {

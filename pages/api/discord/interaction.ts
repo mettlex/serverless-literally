@@ -45,7 +45,7 @@ export default async function handler(
   // Discord sends a POST request to our application when a user interacts
   if (type === 2) {
     try {
-      bot.events.interactionCreate?.(req.body);
+      await bot.events.interactionCreate?.(req.body);
     } catch (error) {
       logger.error(error);
     }
