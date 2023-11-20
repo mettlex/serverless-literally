@@ -8,8 +8,9 @@ export const command: Command = {
   description: "Show help message for Literally bot",
   options: [],
   execute: async (interaction) => {
-    logger.info(typeof interaction);
-    logger.info({ interaction });
+    await bot.rest.sendInteractionResponse(interaction.id, interaction.token, {
+      type: 5,
+    });
 
     await sleep(200);
 
