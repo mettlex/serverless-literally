@@ -1,6 +1,6 @@
-import { Command } from "@/services/bot/command/index";
-import bot from "@/services/bot/index";
-import { sleep } from "@/services/bot/utils";
+import { Command } from "@/services/bot/discord/command/index";
+import bot from "@/services/bot/discord/index";
+import { sleep } from "@/utils";
 import { logger } from "@discordeno/bot";
 
 export const command: Command = {

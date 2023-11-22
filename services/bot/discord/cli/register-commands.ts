@@ -1,5 +1,5 @@
-import commands from "@/services/bot/command/index";
-import bot from "@/services/bot/index";
+import commands from "@/services/bot/discord/command/index";
+import bot from "@/services/bot/discord/index";
 import { CreateSlashApplicationCommand } from "@discordeno/bot";
 import { SlashCommand, SlashCreator } from "slash-create";
 

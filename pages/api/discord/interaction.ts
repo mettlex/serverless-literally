@@ -1,6 +1,7 @@
-import bot from "@/services/bot";
+import bot from "@/services/bot/discord";
+import { events } from "@/services/bot/discord/events";
 import { validateRequest, verifySignature } from "@/services/bot/discord/utils";
-import { logger } from "@discordeno/bot";
+import { InteractionTypes, logger } from "@discordeno/bot";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 export default async function handler(
@@ -34,16 +35,43 @@ export default async function handler(
     type: number;
   };
 
+  console.log(interaction);
+  console.log(JSON.stringify(interaction));
+
   const { type = 0 } = interaction;
 
   // Discord performs Ping interactions to test our application.
   // Type 1 in a request implies a Ping interaction.
-  if (type === 1) {
+  if (type === InteractionTypes.Ping) {
     return res.status(200).json({ type: 1 });
   }
 
   // Discord sends a POST request to our application when a user interacts
-  if (type === 2) {
+  if (type === InteractionTypes.ApplicationCommand) {
+    try {
+      await bot.events.interactionCreate?.(req.body);
+    } catch (error) {
+      logger.error(error);
+    }
+
+    return res.status(200).json({
+      type: 5,
+    });
+  }
+
+  if (type === InteractionTypes.ModalSubmit) {
+    try {
+      await events.modalSubmit?.(req.body);
+    } catch (error) {
+      logger.error(error);
+    }
+
+    return res.status(200).json({
+      type: 5,
+    });
+  }
+
+  if (type === InteractionTypes.MessageComponent) {
     try {
       await bot.events.interactionCreate?.(req.body);
     } catch (error) {

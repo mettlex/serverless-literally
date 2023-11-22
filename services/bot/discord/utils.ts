@@ -1,3 +1,5 @@
+import commands from "@/services/bot/discord/command/index";
+import bot from "@/services/bot/discord/index";
 import { NextApiRequest } from "next";
 import nacl from "tweetnacl";
 
@@ -70,4 +72,23 @@ export async function verifySignature(
   );
 
   return { valid, body };
+}
+
+export async function refreshCommandsForGuild(guildId: string) {
+  try {
+    const guildCommands = await bot.rest.getGuildApplicationCommands(guildId);
+
+    for (const command of guildCommands) {
+      await bot.rest.deleteGuildApplicationCommand(command.id, guildId);
+      console.log(`Deleted command ${command.name} (${command.id})`);
+    }
+
+    await bot.rest.upsertGuildApplicationCommands(guildId, [
+      ...commands.values(),
+    ]);
+
+    console.log(`Registered all commands for guild ${guildId}`);
+  } catch (error) {
+    console.error(error);
+  }
 }

@@ -1,5 +1,9 @@
-import commands from "@/services/bot/command";
-import { EventHandlers, InteractionTypes } from "@discordeno/bot";
+import commands from "@/services/bot/discord/command";
+import {
+  DiscordInteraction,
+  EventHandlers,
+  InteractionTypes,
+} from "@discordeno/bot";
 
 export const interactionCreate: EventHandlers["interactionCreate"] =
   async function (interaction) {
@@ -9,7 +13,7 @@ export const interactionCreate: EventHandlers["interactionCreate"] =
       const command = commands.get(interaction.data.name);
       if (!command) return;
 
-      await command.execute(interaction);
+      await command.execute(interaction as unknown as DiscordInteraction);
     }
   };
 

@@ -1,4 +1,4 @@
-import { events } from "@/services/bot/events";
+import { events } from "@/services/bot/discord/events";
 import { createBot } from "@discordeno/bot";
 
 export const bot = createBot({

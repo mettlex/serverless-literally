@@ -1,6 +1,6 @@
-import { Command } from "@/services/bot/command/index";
-import bot from "@/services/bot/index";
-import { sleep } from "@/services/bot/utils";
+import { Command } from "@/services/bot/discord/command/index";
+import bot from "@/services/bot/discord/index";
+import { sleep } from "@/utils";
 import { logger } from "@discordeno/bot";
 
 export const command: Command = {
@@ -19,7 +19,7 @@ export const command: Command = {
         content:
           "The bot is under active development. A huge rewrite is in progress. Please be patient while we work on the bot. You can join our Discord server at <https://discord.gg/nTHbTxtb5p> for updates on the bot's development.",
       });
-      logger.info(result);
+      // logger.info(result);
     } catch (error) {
       logger.error(error);
     }
