@@ -4,7 +4,7 @@ export type WordChainUnlimited = WordChainUnlimitedInDatabase &
   WordChainUnlimitedExtra;
 
 export class WordChainUnlimitedExtra {
-  static defaultGameRuleFlags = {
+  static defaultGameSettingsFlags = {
     differentPlayerInEachTurn: { order: 1, enabled: true },
     wrongWordBreaksChain: { order: 2, enabled: true },
     totalWordCount: { order: 3, enabled: true },
@@ -14,21 +14,21 @@ export class WordChainUnlimitedExtra {
     recordShortestWord: { order: 7, enabled: true },
   };
 
-  gameRuleFlags: WordChainUnlimitedGameRuleFlags =
-    WordChainUnlimitedExtra.defaultGameRuleFlags;
+  gameSettingsFlags: WordChainUnlimitedGameSettingsFlags =
+    WordChainUnlimitedExtra.defaultGameSettingsFlags;
 
-  static fromBitFieldToGameRuleFlags(bitfield: bigint) {
+  static fromBitFieldToGameSettingsFlags(bitfield: bigint) {
     const flags = {
-      ...WordChainUnlimitedExtra.defaultGameRuleFlags,
+      ...WordChainUnlimitedExtra.defaultGameSettingsFlags,
     };
 
-    for (const [name, rule] of Object.entries(
-      WordChainUnlimitedExtra.defaultGameRuleFlags,
+    for (const [name, setting] of Object.entries(
+      WordChainUnlimitedExtra.defaultGameSettingsFlags,
     )) {
       const bit = bitfield & 1n;
 
-      flags[name as keyof WordChainUnlimitedGameRuleFlags] = {
-        ...rule,
+      flags[name as keyof WordChainUnlimitedGameSettingsFlags] = {
+        ...setting,
         enabled: bit === 1n,
       };
 
@@ -38,17 +38,19 @@ export class WordChainUnlimitedExtra {
     return flags;
   }
 
-  static fromGameRuleFlagsToBitField(
-    flags: WordChainUnlimitedGameRuleFlags,
+  static fromGameSettingsFlagsToBitField(
+    flags: WordChainUnlimitedGameSettingsFlags,
   ): bigint {
     let bitfield = 0n;
 
-    const sortedRules = Object.values(flags).sort((a, b) => a.order - b.order);
+    const sortedSettings = Object.values(flags).sort(
+      (a, b) => a.order - b.order,
+    );
 
-    for (const rule of sortedRules) {
+    for (const setting of sortedSettings) {
       bitfield <<= 1n;
 
-      if (rule.enabled) {
+      if (setting.enabled) {
         bitfield |= 1n;
       }
     }
@@ -56,14 +58,14 @@ export class WordChainUnlimitedExtra {
     return bitfield;
   }
 
-  static overwriteGameRuleFlags(bitmask: bigint): bigint {
+  static overwriteGameSettingsFlags(bitmask: bigint): bigint {
     return (
-      WordChainUnlimitedExtra.fromGameRuleFlagsToBitField(
-        WordChainUnlimitedExtra.defaultGameRuleFlags,
+      WordChainUnlimitedExtra.fromGameSettingsFlagsToBitField(
+        WordChainUnlimitedExtra.defaultGameSettingsFlags,
       ) ^ bitmask
     );
   }
 }
 
-export type WordChainUnlimitedGameRuleFlags =
-  typeof WordChainUnlimitedExtra.defaultGameRuleFlags;
+export type WordChainUnlimitedGameSettingsFlags =
+  typeof WordChainUnlimitedExtra.defaultGameSettingsFlags;

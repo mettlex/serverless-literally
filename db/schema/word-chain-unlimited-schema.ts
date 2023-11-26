@@ -14,6 +14,8 @@ export const wordChainUnlimited = mysqlTable("literally-wc-unlimited", {
 
   count: int("count").notNull().default(0),
 
+  lastCorrectWord: varchar("last_correct_word", { length: 255 }).notNull(),
+
   starterUserId: varchar("starter_user_id", { length: 255 }).notNull(),
 
   discordGuildId: varchar("discord_guild_id", { length: 255 }),

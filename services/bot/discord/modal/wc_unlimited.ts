@@ -52,6 +52,15 @@ const chainWordBtn = (): ButtonComponent => ({
   disabled: false,
 });
 
+const player = (name: string): ButtonComponent => ({
+  type: MessageComponentTypes.Button,
+  customId: "player",
+  label: name,
+  style: ButtonStyles.Secondary,
+  emoji: { name: "✍️" },
+  disabled: true,
+});
+
 const modal: InteractionResponse = {
   type: InteractionResponseTypes.Modal,
   data: {
@@ -86,7 +95,9 @@ export const handler: Modal = {
     const word = (
       interaction.data?.components?.[0]
         .components?.[0] as DiscordInputTextComponent
-    ).value;
+    ).value
+      ?.trim()
+      ?.toLowerCase();
 
     if (!word) return;
 
@@ -95,6 +106,8 @@ export const handler: Modal = {
       interaction.member?.user.global_name ||
       interaction.user?.global_name ||
       interaction.user?.username;
+
+    if (!playerName) return;
 
     try {
       const correctSpelling = await checkSpell(word);
@@ -105,9 +118,11 @@ export const handler: Modal = {
         emoji = "✅";
       } else {
         emoji = "❌";
+
         const result = await bot.rest.sendFollowupMessage(interaction.token, {
-          content: `### ${playerName}: ${word}`,
+          content: `> **${word}**\nThe word is incorrect according to Wiktionary.`,
         });
+
         await bot.rest.addReaction(result.channelId, result.id, emoji);
         return;
       }
@@ -124,12 +139,13 @@ export const handler: Modal = {
         const newGame: WordChainUnlimited = {
           id: Math.floor(Math.random() * 1000000000),
           count: 1,
+          lastCorrectWord: word,
           starterUserId: interaction.member.user.id,
           discordChannelId: interaction.channel_id,
           discordGuildId: interaction.guild_id,
           createdAt: new Date(),
-          ruleFlags: WordChainUnlimitedExtra.fromGameRuleFlagsToBitField(
-            WordChainUnlimitedExtra.defaultGameRuleFlags,
+          ruleFlags: WordChainUnlimitedExtra.fromGameSettingsFlagsToBitField(
+            WordChainUnlimitedExtra.defaultGameSettingsFlags,
           ),
           endedAt: null,
           ...extra,
@@ -138,11 +154,11 @@ export const handler: Modal = {
         await setGameByChannelId(interaction.channel_id, newGame);
 
         await bot.rest.sendFollowupMessage(interaction.token, {
-          content: `> ${playerName}: **${word}**`,
+          content: `> **${word}**`,
           components: [
             {
               type: MessageComponentTypes.ActionRow,
-              components: [counter(1), chainWordBtn()],
+              components: [counter(1), chainWordBtn(), player(playerName)],
             },
           ],
         });

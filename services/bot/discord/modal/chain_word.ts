@@ -3,6 +3,7 @@ import {
   setGameByChannelId,
 } from "@/db/games/wc-unlimited";
 import { checkSpell } from "@/games/wordchain/lib/api/wiktionary";
+import { applyGameRule } from "@/games/wordchain/lib/rules";
 import bot from "@/services/bot/discord/index";
 import { Modal } from "@/services/bot/discord/modal/index";
 import { sleep } from "@/utils";
@@ -48,6 +49,15 @@ const chainWordBtn = (): ButtonComponent => ({
   disabled: false,
 });
 
+const player = (name: string): ButtonComponent => ({
+  type: MessageComponentTypes.Button,
+  customId: "player",
+  label: name,
+  style: ButtonStyles.Secondary,
+  emoji: { name: "✍️" },
+  disabled: true,
+});
+
 const modal: InteractionResponse = {
   type: InteractionResponseTypes.Modal,
   data: {
@@ -76,11 +86,13 @@ export const handler: Modal = {
 
     await sleep(200);
 
-    const word =
+    let word =
       (
         interaction.data?.components?.[0]
           .components?.[0] as DiscordInputTextComponent
       )?.value || (interaction.data?.options?.[0]?.value as string);
+
+    word = word?.trim()?.toLowerCase();
 
     if (!word) {
       await bot.rest.sendInteractionResponse(
@@ -102,24 +114,9 @@ export const handler: Modal = {
       interaction.user?.global_name ||
       interaction.user?.username;
 
+    if (!playerName) return;
+
     try {
-      const correctSpelling = await checkSpell(word);
-
-      let emoji = "";
-
-      if (correctSpelling) {
-        emoji = "✅";
-      } else {
-        emoji = "❌";
-        const result = await bot.rest.sendFollowupMessage(interaction.token, {
-          content: `### ${playerName}: ${word}`,
-        });
-        await bot.rest.addReaction(result.channelId, result.id, emoji);
-        return;
-      }
-
-      if (!correctSpelling) return;
-
       const game = await getGameByChannelId(interaction.channel_id);
 
       logger.info({ game });
@@ -130,19 +127,72 @@ export const handler: Modal = {
         });
 
         return;
-      } else if (game.endedAt === null) {
-        game.count += 1;
-        await setGameByChannelId(interaction.channel_id, game);
-        await bot.rest.sendFollowupMessage(interaction.token, {
-          content: `> ${playerName}: **${word}**`,
-          components: [
-            {
-              type: MessageComponentTypes.ActionRow,
-              components: [counter(game.count), chainWordBtn()],
-            },
-          ],
-        });
       }
+
+      const correctSpelling = await checkSpell(word);
+
+      let emoji = "";
+
+      if (correctSpelling) {
+        emoji = "✅";
+      } else {
+        emoji = "❌";
+
+        const result = await bot.rest.sendFollowupMessage(interaction.token, {
+          content: `> **${word}**\nThe word is incorrect according to Wiktionary.`,
+        });
+
+        await applyGameRule({
+          game,
+          word,
+          brokenRule: game.gameSettingsFlags.wrongWordBreaksChain,
+        });
+
+        await bot.rest.addReaction(result.channelId, result.id, emoji);
+
+        return;
+      }
+
+      if (!correctSpelling) return;
+
+      if (game.endedAt !== null) {
+        return;
+      }
+
+      const lastLetter = game.lastCorrectWord[game.lastCorrectWord.length - 1];
+
+      if (lastLetter !== word[0]) {
+        const result = await bot.rest.sendFollowupMessage(interaction.token, {
+          content: `> **${word}**\nThe word does not start with the last letter (${lastLetter}) of the previous word.`,
+        });
+
+        await applyGameRule({
+          game,
+          word,
+          brokenRule: game.gameSettingsFlags.wrongWordBreaksChain,
+        });
+
+        await bot.rest.addReaction(result.channelId, result.id, "❌");
+
+        return;
+      }
+
+      game.count += 1;
+      game.lastCorrectWord = word;
+      await setGameByChannelId(interaction.channel_id, game);
+      await bot.rest.sendFollowupMessage(interaction.token, {
+        content: `> **${word}**`,
+        components: [
+          {
+            type: MessageComponentTypes.ActionRow,
+            components: [
+              counter(game.count),
+              chainWordBtn(),
+              player(playerName),
+            ],
+          },
+        ],
+      });
     } catch (error) {
       logger.error(error);
     }
