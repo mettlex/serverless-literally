@@ -1,3 +1,4 @@
+import chain_word from "@/services/bot/discord/command/chain_word";
 import check_spelling from "@/services/bot/discord/command/check_spelling";
 import help from "@/services/bot/discord/command/help";
 import ping from "@/services/bot/discord/command/ping";
@@ -15,7 +16,7 @@ export type Command = CreateApplicationCommand & {
 };
 
 export const commands = new Map<string, Command>(
-  [check_spelling, ping, help, refresh, start, stop].map((cmd) => [
+  [chain_word, check_spelling, ping, help, refresh, start, stop].map((cmd) => [
     cmd.name,
     cmd,
   ]),

@@ -3,10 +3,6 @@ import {
   setGameByChannelId,
 } from "@/db/games/wc-unlimited";
 import { checkSpell } from "@/games/wordchain/lib/api/wiktionary";
-import {
-  WordChainUnlimited,
-  WordChainUnlimitedExtra,
-} from "@/games/wordchain/unlimited";
 import bot from "@/services/bot/discord/index";
 import { Modal } from "@/services/bot/discord/modal/index";
 import { sleep } from "@/utils";
@@ -21,12 +17,12 @@ import {
   logger,
 } from "@discordeno/bot";
 
-const name = "wc_unlimited";
+const name = "chain_word";
 
 const textInput: InputTextComponent = {
   type: MessageComponentTypes.InputText,
-  customId: "word",
-  label: "Word to start the chain",
+  customId: "chained_word",
+  label: "Your new word",
   style: 1,
   minLength: 1,
   maxLength: 200,
@@ -55,7 +51,7 @@ const chainWordBtn = (): ButtonComponent => ({
 const modal: InteractionResponse = {
   type: InteractionResponseTypes.Modal,
   data: {
-    title: "Start the game",
+    title: "Enter your word",
     customId: name,
     components: [
       {
@@ -69,26 +65,36 @@ const modal: InteractionResponse = {
 export const handler: Modal = {
   name,
   modal,
-  handle: async (interaction) => {
+  async handle(interaction) {
     if (
       !interaction.channel_id ||
       !interaction.guild_id ||
       !interaction.member?.user.id
-    )
+    ) {
       return;
+    }
+
+    await sleep(200);
+
+    const word =
+      (
+        interaction.data?.components?.[0]
+          .components?.[0] as DiscordInputTextComponent
+      )?.value || (interaction.data?.options?.[0]?.value as string);
+
+    if (!word) {
+      await bot.rest.sendInteractionResponse(
+        interaction.id,
+        interaction.token,
+        this.modal,
+      );
+
+      return;
+    }
 
     await bot.rest.sendInteractionResponse(interaction.id, interaction.token, {
       type: 5,
     });
-
-    await sleep(200);
-
-    const word = (
-      interaction.data?.components?.[0]
-        .components?.[0] as DiscordInputTextComponent
-    ).value;
-
-    if (!word) return;
 
     const playerName =
       interaction.member?.nick ||
@@ -119,36 +125,22 @@ export const handler: Modal = {
       logger.info({ game });
 
       if (!game) {
-        const extra = new WordChainUnlimitedExtra();
+        await bot.rest.sendFollowupMessage(interaction.token, {
+          content: `### There is no game running currently in this channel.`,
+        });
 
-        const newGame: WordChainUnlimited = {
-          id: Math.floor(Math.random() * 1000000000),
-          count: 1,
-          starterUserId: interaction.member.user.id,
-          discordChannelId: interaction.channel_id,
-          discordGuildId: interaction.guild_id,
-          createdAt: new Date(),
-          ruleFlags: WordChainUnlimitedExtra.fromGameRuleFlagsToBitField(
-            WordChainUnlimitedExtra.defaultGameRuleFlags,
-          ),
-          endedAt: null,
-          ...extra,
-        };
-
-        await setGameByChannelId(interaction.channel_id, newGame);
-
+        return;
+      } else if (game.endedAt === null) {
+        game.count += 1;
+        await setGameByChannelId(interaction.channel_id, game);
         await bot.rest.sendFollowupMessage(interaction.token, {
           content: `> ${playerName}: **${word}**`,
           components: [
             {
               type: MessageComponentTypes.ActionRow,
-              components: [counter(1), chainWordBtn()],
+              components: [counter(game.count), chainWordBtn()],
             },
           ],
-        });
-      } else if (game.endedAt === null) {
-        await bot.rest.sendFollowupMessage(interaction.token, {
-          content: `### There is already a game running in this channel. You may use \`/stop\` command if you have "Manage Channels" permission.`,
         });
       }
     } catch (error) {

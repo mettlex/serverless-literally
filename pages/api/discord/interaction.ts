@@ -1,5 +1,5 @@
 import bot from "@/services/bot/discord";
-import { events } from "@/services/bot/discord/events";
+import { events } from "@/services/bot/discord/events/index";
 import { validateRequest, verifySignature } from "@/services/bot/discord/utils";
 import { InteractionTypes, logger } from "@discordeno/bot";
 import { NextApiRequest, NextApiResponse } from "next/types";
@@ -73,7 +73,7 @@ export default async function handler(
 
   if (type === InteractionTypes.MessageComponent) {
     try {
-      await bot.events.interactionCreate?.(req.body);
+      await events.componentInteractionCreate?.(req.body);
     } catch (error) {
       logger.error(error);
     }
