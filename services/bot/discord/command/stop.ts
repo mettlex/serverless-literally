@@ -3,7 +3,7 @@ import { games } from "@/games";
 import { Command } from "@/services/bot/discord/command/index";
 import bot from "@/services/bot/discord/index";
 import { sleep } from "@/utils";
-import { ApplicationCommandOptionTypes } from "@discordeno/bot";
+import { ApplicationCommandOptionTypes, Permissions } from "@discordeno/bot";
 
 const gameOptions = [];
 
@@ -38,9 +38,16 @@ export const command: Command = {
 
     switch (interaction.data?.options?.[0].value) {
       case games.wordChainUnlimited.key:
-        if (!interaction.channel_id) break;
+        if (!interaction.channel_id || !interaction.member?.permissions) break;
 
-        console.log({ perms: interaction.member?.permissions });
+        const permissions = new Permissions(interaction.member.permissions);
+
+        if (!permissions.has("MANAGE_CHANNELS")) {
+          await bot.rest.sendFollowupMessage(interaction.token, {
+            content: `### You don't have "Manage Channels" permission.`,
+          });
+          break;
+        }
 
         try {
           await setGameByChannelId(interaction.channel_id, undefined);

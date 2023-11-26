@@ -121,7 +121,7 @@ export const handler: Modal = {
         await bot.rest.addReaction(result.channelId, result.id, emoji);
       } else if (game.endedAt === null) {
         await bot.rest.sendFollowupMessage(interaction.token, {
-          content: `### There is already a game running in this channel. You may use \`/stop\` command if you're a server manager.`,
+          content: `### There is already a game running in this channel. You may use \`/stop\` command if you have "Manage Channels" permission.`,
         });
       }
     } catch (error) {
