@@ -1,4 +1,9 @@
-export class WordChainUnlimited {
+import { WordChainUnlimitedInDatabase } from "@/db/schema/word-chain-unlimited-schema";
+
+export type WordChainUnlimited = WordChainUnlimitedInDatabase &
+  WordChainUnlimitedExtra;
+
+export class WordChainUnlimitedExtra {
   static defaultGameRuleFlags = {
     differentPlayerInEachTurn: { order: 1, enabled: true },
     wrongWordBreaksChain: { order: 2, enabled: true },
@@ -10,24 +15,15 @@ export class WordChainUnlimited {
   };
 
   gameRuleFlags: WordChainUnlimitedGameRuleFlags =
-    WordChainUnlimited.defaultGameRuleFlags;
-
-  getGameRuleFlagsBitField() {
-    return WordChainUnlimited.fromGameRuleFlagsToBitField(this.gameRuleFlags);
-  }
-
-  setGameRuleFlagsBitField(bitfield: bigint) {
-    this.gameRuleFlags =
-      WordChainUnlimited.fromBitFieldToGameRuleFlags(bitfield);
-  }
+    WordChainUnlimitedExtra.defaultGameRuleFlags;
 
   static fromBitFieldToGameRuleFlags(bitfield: bigint) {
     const flags = {
-      ...WordChainUnlimited.defaultGameRuleFlags,
+      ...WordChainUnlimitedExtra.defaultGameRuleFlags,
     };
 
     for (const [name, rule] of Object.entries(
-      WordChainUnlimited.defaultGameRuleFlags,
+      WordChainUnlimitedExtra.defaultGameRuleFlags,
     )) {
       const bit = bitfield & 1n;
 
@@ -62,12 +58,12 @@ export class WordChainUnlimited {
 
   static overwriteGameRuleFlags(bitmask: bigint): bigint {
     return (
-      WordChainUnlimited.fromGameRuleFlagsToBitField(
-        WordChainUnlimited.defaultGameRuleFlags,
+      WordChainUnlimitedExtra.fromGameRuleFlagsToBitField(
+        WordChainUnlimitedExtra.defaultGameRuleFlags,
       ) ^ bitmask
     );
   }
 }
 
 export type WordChainUnlimitedGameRuleFlags =
-  typeof WordChainUnlimited.defaultGameRuleFlags;
+  typeof WordChainUnlimitedExtra.defaultGameRuleFlags;

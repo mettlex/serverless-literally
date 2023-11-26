@@ -1,9 +1,9 @@
+import { setGameByChannelId } from "@/db/games/wc-unlimited";
 import { games } from "@/games";
 import { Command } from "@/services/bot/discord/command/index";
 import bot from "@/services/bot/discord/index";
-import wcUnlimitedModal from "@/services/bot/discord/modal/wc_unlimited";
 import { sleep } from "@/utils";
-import { ApplicationCommandOptionTypes, logger } from "@discordeno/bot";
+import { ApplicationCommandOptionTypes } from "@discordeno/bot";
 
 const gameOptions = [];
 
@@ -18,8 +18,8 @@ for (const key in games) {
 }
 
 export const command: Command = {
-  name: "start",
-  description: "Start a game!",
+  name: "stop",
+  description: "Stop a game.",
   options: [
     {
       name: "game",
@@ -30,18 +30,26 @@ export const command: Command = {
     },
   ],
   execute: async (interaction) => {
+    await bot.rest.sendInteractionResponse(interaction.id, interaction.token, {
+      type: 5,
+    });
+
     await sleep(200);
 
     switch (interaction.data?.options?.[0].value) {
       case games.wordChainUnlimited.key:
+        if (!interaction.channel_id) break;
+
+        console.log({ perms: interaction.member?.permissions });
+
         try {
-          await bot.rest.sendInteractionResponse(
-            interaction.id,
-            interaction.token,
-            wcUnlimitedModal.modal,
-          );
+          await setGameByChannelId(interaction.channel_id, undefined);
+
+          await bot.rest.sendFollowupMessage(interaction.token, {
+            content: `### The game has been stopped.`,
+          });
         } catch (error) {
-          logger.error(error);
+          console.error(error);
         }
 
         break;

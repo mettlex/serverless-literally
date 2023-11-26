@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "migration:generate": "drizzle-kit generate:mysql"
+    "migration:generate": "drizzle-kit generate:mysql",
+    "mg": "drizzle-kit generate:mysql"
   },
   "dependencies": {
     "@discordeno/bot": "^19.0.0-next.7aed376",
