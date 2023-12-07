@@ -7,16 +7,6 @@ import {
 } from "@/games/wordchain/unlimited";
 import { eq } from "drizzle-orm";
 
-const cache = new Map<
-  string, // channelId
-  {
-    game: {
-      instance: WordChainUnlimited & { id: number };
-      lastFetchedAt: Date;
-    };
-  }
->();
-
 export async function getGameByChannelId(
   channelId: string,
 ): Promise<
@@ -24,17 +14,6 @@ export async function getGameByChannelId(
 > {
   let game;
   let gameInDb;
-
-  const cachedGame = cache.get(channelId);
-
-  if (
-    cachedGame &&
-    cachedGame.game.lastFetchedAt.getTime() <
-      Date.now() - 1000 * 60
-  ) {
-    game = cachedGame.game.instance;
-    return game;
-  }
 
   gameInDb = (
     await db
@@ -51,13 +30,6 @@ export async function getGameByChannelId(
       ...new WordChainUnlimitedExtra(),
       ...gameInDb,
     };
-
-    cache.set(channelId, {
-      game: {
-        instance: game,
-        lastFetchedAt: new Date(),
-      },
-    });
   }
 
   return game;
