@@ -202,7 +202,8 @@ export async function handleGame({
 
     if (game.gameSettingsFlags.differentPlayerInEachTurn) {
       if (
-        game.starterUserId === interaction.member.user.id
+        game.lastCorrectWordPlayerId ===
+        interaction.member.user.id
       ) {
         await bot.rest.sendFollowupMessage(
           interaction.token,
