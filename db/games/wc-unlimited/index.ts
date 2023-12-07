@@ -1,40 +1,83 @@
+import { db } from "@/db";
+import { chainedWords } from "@/db/schema/chained-word-schema";
 import {
-  mockChainedWordsMap,
-  mockGameMap,
-} from "@/db/games/wc-unlimited/mock";
-import { WordChainUnlimited } from "@/games/wordchain/unlimited";
+  selectWCUnlimitedSchema,
+  wordChainUnlimited,
+} from "@/db/schema/word-chain-unlimited-schema";
+import {
+  WordChainUnlimited,
+  WordChainUnlimitedExtra,
+} from "@/games/wordchain/unlimited";
+import { eq } from "drizzle-orm";
+import { z } from "zod";
 
 export async function getGameByChannelId(
   channelId: string,
-): Promise<WordChainUnlimited | undefined> {
-  //#region Mock
-  return mockGameMap.get(channelId);
-  //#endregion Mock
+): Promise<
+  | (z.infer<typeof selectWCUnlimitedSchema> &
+      WordChainUnlimitedExtra)
+  | undefined
+> {
+  let game;
+
+  const gameInDb = (
+    await db
+      .select()
+      .from(wordChainUnlimited)
+      .where(
+        eq(wordChainUnlimited.discordChannelId, channelId),
+      )
+      .limit(1)
+  )[0];
+
+  if (gameInDb) {
+    game = {
+      ...new WordChainUnlimitedExtra(),
+      ...gameInDb,
+    };
+  }
+
+  return game;
 }
 
 export async function setGameByChannelId(
   channelId: string,
-  game: WordChainUnlimited | undefined,
+  game: WordChainUnlimited,
 ): Promise<void> {
-  //#region Mock
+  const gameInDb = await getGameByChannelId(channelId);
 
-  if (!game) {
-    mockChainedWordsMap.delete(channelId);
-    mockGameMap.delete(channelId);
+  if (!gameInDb) {
+    await db.insert(wordChainUnlimited).values([game]);
+
     return;
   }
 
-  mockGameMap.set(channelId, game);
-  //#endregion Mock
+  await db
+    .update(wordChainUnlimited)
+    .set(game)
+    .where(
+      eq(wordChainUnlimited.discordChannelId, channelId),
+    );
 }
 
 export async function deleteGameByChannelId(
   channelId: string,
 ): Promise<void> {
-  //#region Mock
-  mockChainedWordsMap.delete(channelId);
-  mockGameMap.delete(channelId);
-  //#endregion Mock
+  const game = await getGameByChannelId(channelId);
+
+  if (!game) {
+    return;
+  }
+
+  await db
+    .delete(chainedWords)
+    .where(eq(chainedWords.chainId, game.id));
+
+  await db
+    .delete(wordChainUnlimited)
+    .where(
+      eq(wordChainUnlimited.discordChannelId, channelId),
+    );
 }
 
 export async function getChainedWordsByChannelId(
@@ -46,27 +89,42 @@ export async function getChainedWordsByChannelId(
     return [];
   }
 
-  //#region Mock
-  return mockChainedWordsMap.get(channelId) ?? [];
-  //#endregion Mock
+  const words = (
+    await db
+      .select()
+      .from(chainedWords)
+      .where(eq(chainedWords.chainId, game.id))
+  ).map((x) => x.word);
+
+  return words;
 }
 
-export async function addChainedWordByChannelId(
-  channelId: string,
-  word: string,
-): Promise<void> {
+export async function addChainedWordByChannelId({
+  channelId,
+  word,
+  discordUserId,
+  discordMessageId,
+}: {
+  channelId: string;
+  word: string;
+  discordUserId: string;
+  discordMessageId: string;
+}): Promise<void> {
   const game = await getGameByChannelId(channelId);
 
   if (!game) {
     return;
   }
 
-  //#region Mock
-  const chainedWords =
-    mockChainedWordsMap.get(channelId) ?? [];
-
-  chainedWords.push(word);
-
-  mockChainedWordsMap.set(channelId, chainedWords);
-  //#endregion Mock
+  await db.insert(chainedWords).values([
+    {
+      chainId: game.id,
+      word,
+      correctSpelling: true,
+      previousWord: game.lastCorrectWord,
+      firstWordId: "", // TODO: implement
+      discordMessageId,
+      discordUserId,
+    },
+  ]);
 }

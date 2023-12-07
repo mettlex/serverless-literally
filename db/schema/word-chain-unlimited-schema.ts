@@ -23,9 +23,12 @@ export const wordChainUnlimited = mysqlTable(
       length: 255,
     }).notNull(),
 
-    lastCorrectWordPlayerId: varchar("last_correct_word", {
-      length: 255,
-    }).notNull(),
+    lastCorrectWordPlayerId: varchar(
+      "last_correct_word_player_id",
+      {
+        length: 255,
+      },
+    ).notNull(),
 
     starterUserId: varchar("starter_user_id", {
       length: 255,

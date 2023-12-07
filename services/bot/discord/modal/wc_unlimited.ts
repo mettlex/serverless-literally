@@ -183,15 +183,17 @@ export const handler: Modal = {
           ...extra,
         };
 
-        await addChainedWordByChannelId(
-          interaction.channel_id,
-          word,
-        );
-
         await setGameByChannelId(
           interaction.channel_id,
           newGame,
         );
+
+        await addChainedWordByChannelId({
+          channelId: interaction.channel_id,
+          word,
+          discordUserId: interaction.member.user.id,
+          discordMessageId: interaction.message?.id || "",
+        });
 
         await bot.rest.sendFollowupMessage(
           interaction.token,
@@ -218,7 +220,7 @@ export const handler: Modal = {
         );
       }
     } catch (error) {
-      logger.error(error);
+      console.error(error);
     }
   },
 };

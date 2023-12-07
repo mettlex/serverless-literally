@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "f16fba20-a858-4c7f-9a51-5269200243d7",
+  "id": "11cb43e7-43d9-4464-ab89-459f7521e7ac",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "literally-chained-words": {
@@ -117,6 +117,13 @@
         },
         "last_correct_word": {
           "name": "last_correct_word",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_correct_word_player_id": {
+          "name": "last_correct_word_player_id",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,

@@ -15,6 +15,7 @@ CREATE TABLE `literally-wc-unlimited` (
 	`id` serial AUTO_INCREMENT NOT NULL,
 	`count` int NOT NULL,
 	`last_correct_word` varchar(255) NOT NULL,
+	`last_correct_word_player_id` varchar(255) NOT NULL,
 	`starter_user_id` varchar(255) NOT NULL,
 	`discord_guild_id` varchar(255),
 	`discord_channel_id` varchar(255),
