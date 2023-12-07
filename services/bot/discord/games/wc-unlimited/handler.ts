@@ -51,6 +51,16 @@ const player = (name: string): ButtonComponent => ({
   disabled: true,
 });
 
+const definition = (word: string): ButtonComponent => ({
+  type: MessageComponentTypes.Button,
+  customId: "wiki",
+  label: "wiki",
+  style: ButtonStyles.Secondary,
+  emoji: { name: "📘" },
+  disabled: false,
+  url: `https://en.wiktionary.org/wiki/${word}`,
+});
+
 type HandleGameParams = {
   interaction: DiscordInteraction;
   word: string;
@@ -253,6 +263,7 @@ export async function handleGame({
             counter(game.count),
             player(playerName),
             chainWordBtn(),
+            definition(word),
           ],
         },
       ],

@@ -71,6 +71,16 @@ const player = (name: string): ButtonComponent => ({
   disabled: true,
 });
 
+const definition = (word: string): ButtonComponent => ({
+  type: MessageComponentTypes.Button,
+  customId: "wiki",
+  label: "wiki",
+  style: ButtonStyles.Secondary,
+  emoji: { name: "📘" },
+  disabled: false,
+  url: `https://en.wiktionary.org/wiki/${word}`,
+});
+
 const modal: InteractionResponse = {
   type: InteractionResponseTypes.Modal,
   data: {
@@ -206,6 +216,7 @@ export const handler: Modal = {
                   counter(1),
                   player(playerName),
                   chainWordBtn(),
+                  definition(word),
                 ],
               },
             ],
