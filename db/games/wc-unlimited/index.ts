@@ -1,22 +1,17 @@
 import { db } from "@/db";
 import { chainedWords } from "@/db/schema/chained-word-schema";
-import {
-  selectWCUnlimitedSchema,
-  wordChainUnlimited,
-} from "@/db/schema/word-chain-unlimited-schema";
+import { wordChainUnlimited } from "@/db/schema/word-chain-unlimited-schema";
 import {
   WordChainUnlimited,
   WordChainUnlimitedExtra,
 } from "@/games/wordchain/unlimited";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 
 const cache = new Map<
   string, // channelId
   {
     game: {
-      instance: z.infer<typeof selectWCUnlimitedSchema> &
-        WordChainUnlimitedExtra;
+      instance: WordChainUnlimited & { id: number };
       lastFetchedAt: Date;
     };
   }
@@ -25,9 +20,7 @@ const cache = new Map<
 export async function getGameByChannelId(
   channelId: string,
 ): Promise<
-  | (z.infer<typeof selectWCUnlimitedSchema> &
-      WordChainUnlimitedExtra)
-  | undefined
+  (WordChainUnlimited & { id: number }) | undefined
 > {
   let game;
   let gameInDb;

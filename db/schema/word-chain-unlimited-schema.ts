@@ -6,11 +6,6 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/mysql-core";
-import {
-  createInsertSchema,
-  createSelectSchema,
-} from "drizzle-zod";
-import { z } from "zod";
 
 export const wordChainUnlimited = mysqlTable(
   "literally-wc-unlimited",
@@ -56,14 +51,5 @@ export const wordChainUnlimited = mysqlTable(
   },
 );
 
-export const insertWCUnlimitedSchema = createInsertSchema(
-  wordChainUnlimited,
-);
-
-export const selectWCUnlimitedSchema = createSelectSchema(
-  wordChainUnlimited,
-);
-
-export type WordChainUnlimitedInDatabase = z.infer<
-  typeof insertWCUnlimitedSchema
->;
+export type WordChainUnlimitedInDatabase =
+  typeof wordChainUnlimited.$inferInsert;
