@@ -12,13 +12,26 @@ export async function applyGameRule({
   word,
   brokenRule,
 }: ApplyGameRuleParams) {
-  const { gameSettingsFlags: rules, discordChannelId } = game;
+  const { gameSettingsFlags: rules, discordChannelId } =
+    game;
 
   if (
     rules.wrongWordBreaksChain.enabled &&
     brokenRule.order === rules.wrongWordBreaksChain.order
   ) {
     game.count = 0;
+
+    if (discordChannelId) {
+      await setGameByChannelId(discordChannelId, game);
+    }
+
+    return;
+  }
+
+  // wrong word should not reach here
+
+  if (word.length > game.longestWord.length) {
+    game.longestWord = word;
 
     if (discordChannelId) {
       await setGameByChannelId(discordChannelId, game);

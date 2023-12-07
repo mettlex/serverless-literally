@@ -6,32 +6,61 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/mysql-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import {
+  createInsertSchema,
+  createSelectSchema,
+} from "drizzle-zod";
 import { z } from "zod";
 
-export const wordChainUnlimited = mysqlTable("literally-wc-unlimited", {
-  id: serial("id").primaryKey(),
+export const wordChainUnlimited = mysqlTable(
+  "literally-wc-unlimited",
+  {
+    id: serial("id").primaryKey(),
 
-  count: int("count").notNull().default(0),
+    count: int("count").notNull(),
 
-  lastCorrectWord: varchar("last_correct_word", { length: 255 }).notNull(),
+    lastCorrectWord: varchar("last_correct_word", {
+      length: 255,
+    }).notNull(),
 
-  starterUserId: varchar("starter_user_id", { length: 255 }).notNull(),
+    lastCorrectWordPlayerId: varchar("last_correct_word", {
+      length: 255,
+    }).notNull(),
 
-  discordGuildId: varchar("discord_guild_id", { length: 255 }),
-  discordChannelId: varchar("discord_channel_id", { length: 255 }),
+    starterUserId: varchar("starter_user_id", {
+      length: 255,
+    }).notNull(),
 
-  // bitfield to toggle game rules
-  ruleFlags: bigint("rule_flags", { mode: "bigint" }).notNull(),
+    discordGuildId: varchar("discord_guild_id", {
+      length: 255,
+    }),
 
-  createdAt: timestamp("created_at").defaultNow(),
-  endedAt: timestamp("ended_at"),
-});
+    discordChannelId: varchar("discord_channel_id", {
+      length: 255,
+    }),
 
-export const insertWCUnlimitedSchema = createInsertSchema(wordChainUnlimited);
+    longestWord: varchar("longest_word", {
+      length: 255,
+    }).notNull(),
 
-export const selectWCUnlimitedSchema = createSelectSchema(wordChainUnlimited);
+    // bitfield to toggle game rules
+    ruleFlags: bigint("rule_flags", {
+      mode: "bigint",
+    }).notNull(),
+
+    createdAt: timestamp("created_at").defaultNow(),
+    endedAt: timestamp("ended_at"),
+  },
+);
+
+export const insertWCUnlimitedSchema = createInsertSchema(
+  wordChainUnlimited,
+);
+
+export const selectWCUnlimitedSchema = createSelectSchema(
+  wordChainUnlimited,
+);
 
 export type WordChainUnlimitedInDatabase = z.infer<
-  typeof selectWCUnlimitedSchema
+  typeof insertWCUnlimitedSchema
 >;

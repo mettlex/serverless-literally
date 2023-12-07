@@ -1,4 +1,5 @@
 import {
+  addChainedWordByChannelId,
   getGameByChannelId,
   setGameByChannelId,
 } from "@/db/games/wc-unlimited";
@@ -43,11 +44,20 @@ const counter = (count: number): ButtonComponent => ({
   disabled: true,
 });
 
+const resetCounter = (): ButtonComponent => ({
+  type: MessageComponentTypes.Button,
+  customId: "counter",
+  label: `0`,
+  style: ButtonStyles.Secondary,
+  emoji: { name: "❌" },
+  disabled: true,
+});
+
 const chainWordBtn = (): ButtonComponent => ({
   type: MessageComponentTypes.Button,
   customId: "chain_word",
   label: "word",
-  style: ButtonStyles.Secondary,
+  style: ButtonStyles.Primary,
   emoji: { name: "⛓️" },
   disabled: false,
 });
@@ -86,9 +96,13 @@ export const handler: Modal = {
     )
       return;
 
-    await bot.rest.sendInteractionResponse(interaction.id, interaction.token, {
-      type: 5,
-    });
+    await bot.rest.sendInteractionResponse(
+      interaction.id,
+      interaction.token,
+      {
+        type: 5,
+      },
+    );
 
     await sleep(200);
 
@@ -97,7 +111,9 @@ export const handler: Modal = {
         .components?.[0] as DiscordInputTextComponent
     ).value
       ?.trim()
-      ?.toLowerCase();
+      ?.toLowerCase()
+      ?.split(" ")
+      .at(-1);
 
     if (!word) return;
 
@@ -112,24 +128,31 @@ export const handler: Modal = {
     try {
       const correctSpelling = await checkSpell(word);
 
-      let emoji = "";
+      if (!correctSpelling) {
+        await bot.rest.sendFollowupMessage(
+          interaction.token,
+          {
+            content: `> **${word}**\nThe word is incorrect according to Wiktionary.`,
+            components: [
+              {
+                type: MessageComponentTypes.ActionRow,
+                components: [
+                  resetCounter(),
+                  player(playerName),
+                ],
+              },
+            ],
+          },
+        );
 
-      if (correctSpelling) {
-        emoji = "✅";
-      } else {
-        emoji = "❌";
-
-        const result = await bot.rest.sendFollowupMessage(interaction.token, {
-          content: `> **${word}**\nThe word is incorrect according to Wiktionary.`,
-        });
-
-        await bot.rest.addReaction(result.channelId, result.id, emoji);
         return;
       }
 
       if (!correctSpelling) return;
 
-      const game = await getGameByChannelId(interaction.channel_id);
+      const game = await getGameByChannelId(
+        interaction.channel_id,
+      );
 
       logger.info({ game });
 
@@ -137,35 +160,62 @@ export const handler: Modal = {
         const extra = new WordChainUnlimitedExtra();
 
         const newGame: WordChainUnlimited = {
-          id: Math.floor(Math.random() * 1000000000),
           count: 1,
+
           lastCorrectWord: word,
+          lastCorrectWordPlayerId:
+            interaction.member.user.id,
+
           starterUserId: interaction.member.user.id,
+
           discordChannelId: interaction.channel_id,
           discordGuildId: interaction.guild_id,
-          createdAt: new Date(),
-          ruleFlags: WordChainUnlimitedExtra.fromGameSettingsFlagsToBitField(
-            WordChainUnlimitedExtra.defaultGameSettingsFlags,
-          ),
+
+          longestWord: word,
+
+          ruleFlags:
+            WordChainUnlimitedExtra.fromGameSettingsFlagsToBitField(
+              WordChainUnlimitedExtra.defaultGameSettingsFlags,
+            ),
+
           endedAt: null,
+
           ...extra,
         };
 
-        await setGameByChannelId(interaction.channel_id, newGame);
+        await addChainedWordByChannelId(
+          interaction.channel_id,
+          word,
+        );
 
-        await bot.rest.sendFollowupMessage(interaction.token, {
-          content: `> **${word}**`,
-          components: [
-            {
-              type: MessageComponentTypes.ActionRow,
-              components: [counter(1), chainWordBtn(), player(playerName)],
-            },
-          ],
-        });
+        await setGameByChannelId(
+          interaction.channel_id,
+          newGame,
+        );
+
+        await bot.rest.sendFollowupMessage(
+          interaction.token,
+          {
+            content: `> **${word}**`,
+            components: [
+              {
+                type: MessageComponentTypes.ActionRow,
+                components: [
+                  counter(1),
+                  player(playerName),
+                  chainWordBtn(),
+                ],
+              },
+            ],
+          },
+        );
       } else if (game.endedAt === null) {
-        await bot.rest.sendFollowupMessage(interaction.token, {
-          content: `### There is already a game running in this channel. You may use \`/stop\` command if you have "Manage Channels" permission.`,
-        });
+        await bot.rest.sendFollowupMessage(
+          interaction.token,
+          {
+            content: `### There is already a game running in this channel. You may use \`/stop\` command if you have "Manage Channels" permission.`,
+          },
+        );
       }
     } catch (error) {
       logger.error(error);
