@@ -263,7 +263,7 @@ export async function handleGame({
             counter(game.count),
             player(playerName),
             chainWordBtn(),
-            definition(word),
+            // definition(word),
           ],
         },
       ],

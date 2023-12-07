@@ -216,7 +216,7 @@ export const handler: Modal = {
                   counter(1),
                   player(playerName),
                   chainWordBtn(),
-                  definition(word),
+                  // definition(word),
                 ],
               },
             ],
