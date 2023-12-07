@@ -11,6 +11,17 @@ import {
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
+const cache = new Map<
+  string, // channelId
+  {
+    game: {
+      instance: z.infer<typeof selectWCUnlimitedSchema> &
+        WordChainUnlimitedExtra;
+      lastFetchedAt: Date;
+    };
+  }
+>();
+
 export async function getGameByChannelId(
   channelId: string,
 ): Promise<
@@ -19,8 +30,20 @@ export async function getGameByChannelId(
   | undefined
 > {
   let game;
+  let gameInDb;
 
-  const gameInDb = (
+  const cachedGame = cache.get(channelId);
+
+  if (
+    cachedGame &&
+    cachedGame.game.lastFetchedAt.getTime() <
+      Date.now() - 1000 * 60
+  ) {
+    game = cachedGame.game.instance;
+    return game;
+  }
+
+  gameInDb = (
     await db
       .select()
       .from(wordChainUnlimited)
@@ -35,6 +58,13 @@ export async function getGameByChannelId(
       ...new WordChainUnlimitedExtra(),
       ...gameInDb,
     };
+
+    cache.set(channelId, {
+      game: {
+        instance: game,
+        lastFetchedAt: new Date(),
+      },
+    });
   }
 
   return game;
@@ -44,20 +74,50 @@ export async function setGameByChannelId(
   channelId: string,
   game: WordChainUnlimited,
 ): Promise<void> {
-  const gameInDb = await getGameByChannelId(channelId);
+  try {
+    const gameInDb = await getGameByChannelId(channelId);
 
-  if (!gameInDb) {
-    await db.insert(wordChainUnlimited).values([game]);
+    if (!gameInDb) {
+      await db.insert(wordChainUnlimited).values([
+        {
+          count: game.count,
+          discordChannelId: channelId,
+          lastCorrectWord: game.lastCorrectWord,
+          lastCorrectWordPlayerId:
+            game.lastCorrectWordPlayerId,
+          longestWord: game.longestWord,
+          ruleFlags: game.ruleFlags,
+          starterUserId: game.starterUserId,
+          createdAt: game.createdAt,
+          discordGuildId: game.discordGuildId,
+          endedAt: game.endedAt,
+        },
+      ]);
 
-    return;
+      return;
+    }
+
+    await db
+      .update(wordChainUnlimited)
+      .set({
+        count: game.count,
+        discordChannelId: channelId,
+        lastCorrectWord: game.lastCorrectWord,
+        lastCorrectWordPlayerId:
+          game.lastCorrectWordPlayerId,
+        longestWord: game.longestWord,
+        ruleFlags: game.ruleFlags,
+        starterUserId: game.starterUserId,
+        createdAt: game.createdAt,
+        discordGuildId: game.discordGuildId,
+        endedAt: game.endedAt,
+      })
+      .where(
+        eq(wordChainUnlimited.discordChannelId, channelId),
+      );
+  } catch (error) {
+    console.error(error);
   }
-
-  await db
-    .update(wordChainUnlimited)
-    .set(game)
-    .where(
-      eq(wordChainUnlimited.discordChannelId, channelId),
-    );
 }
 
 export async function deleteGameByChannelId(

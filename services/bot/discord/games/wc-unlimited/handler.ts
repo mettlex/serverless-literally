@@ -234,14 +234,14 @@ export async function handleGame({
     game.lastCorrectWordPlayerId =
       interaction.member.user.id;
 
+    await setGameByChannelId(interaction.channel_id, game);
+
     await addChainedWordByChannelId({
       channelId: interaction.channel_id,
       word,
       discordUserId: interaction.member.user.id,
       discordMessageId: interaction.message?.id || "",
     });
-
-    await setGameByChannelId(interaction.channel_id, game);
 
     await bot.rest.sendFollowupMessage(interaction.token, {
       content: `> **${word}**`,

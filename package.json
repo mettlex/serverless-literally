@@ -15,7 +15,7 @@
     "@discordeno/rest": "^19.0.0-next.7aed376",
     "@discordeno/types": "^19.0.0-next.7aed376",
     "@planetscale/database": "^1.11.0",
-    "drizzle-orm": "^0.29.0",
+    "drizzle-orm": "^0.29.1",
     "drizzle-zod": "^0.5.1",
     "next": "14.0.3",
     "react": "^18",
