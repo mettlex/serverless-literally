@@ -153,3 +153,17 @@ export async function addChainedWordByChannelId({
     },
   ]);
 }
+
+export async function deleteChainedWordsByChannelId(
+  channelId: string,
+): Promise<void> {
+  const game = await getGameByChannelId(channelId);
+
+  if (!game) {
+    return;
+  }
+
+  await db
+    .delete(chainedWords)
+    .where(eq(chainedWords.chainId, game.id));
+}

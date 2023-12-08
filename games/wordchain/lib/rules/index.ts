@@ -1,4 +1,7 @@
-import { setGameByChannelId } from "@/db/games/wc-unlimited";
+import {
+  deleteChainedWordsByChannelId,
+  setGameByChannelId,
+} from "@/db/games/wc-unlimited";
 import { WordChainUnlimited } from "@/games/wordchain/unlimited";
 
 type ApplyGameRuleParams = {
@@ -22,6 +25,7 @@ export async function applyGameRule({
     game.count = 0;
 
     if (discordChannelId) {
+      await deleteChainedWordsByChannelId(discordChannelId);
       await setGameByChannelId(discordChannelId, game);
     }
 
