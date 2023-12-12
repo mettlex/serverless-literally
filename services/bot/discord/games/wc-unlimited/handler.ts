@@ -81,7 +81,8 @@ export async function handleGame({
     interaction.member?.nick ||
     interaction.member?.user.global_name ||
     interaction.user?.global_name ||
-    interaction.user?.username;
+    interaction.user?.username ||
+    interaction.member?.user.username;
 
   if (!playerName) return;
 
