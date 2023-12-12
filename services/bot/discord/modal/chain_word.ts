@@ -41,14 +41,6 @@ export const handler: Modal = {
   name,
   modal,
   async handle(interaction) {
-    if (
-      !interaction.channel_id ||
-      !interaction.guild_id ||
-      !interaction.member?.user.id
-    ) {
-      return;
-    }
-
     await sleep(200);
 
     let word: string | undefined =
