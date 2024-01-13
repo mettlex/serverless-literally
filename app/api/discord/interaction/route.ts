@@ -2,12 +2,9 @@ import bot from "@/services/bot/discord";
 import { events } from "@/services/bot/discord/events/index";
 import { validateRequest, verifySignature } from "@/services/bot/discord/utils";
 import { InteractionTypes, logger } from "@discordeno/bot";
-import { NextApiRequest, NextApiResponse } from "next/types";
+import { NextRequest, NextResponse } from "next/server";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+export async function POST(req: NextRequest) {
   const { error } = validateRequest(req, {
     POST: {
       headers: ["X-Signature-Ed25519", "X-Signature-Timestamp"],
@@ -17,7 +14,10 @@ export default async function handler(
   logger.info({ error });
 
   if (error) {
-    return res.status(error.status).json({ error: error.message });
+    return NextResponse.json(
+      { error: error.message },
+      { status: error.status },
+    );
   }
 
   console.log("Request body", req.body);
@@ -30,62 +30,53 @@ export default async function handler(
   logger.info(`Valid request: ${valid}`);
 
   if (!valid) {
-    return res.status(401).json({ error: "Invalid request" });
+    return NextResponse.json({ error: "Invalid request" }, { status: 401 });
   }
 
-  const interaction = JSON.parse(body) as {
-    type: number;
-  };
+  const interaction = JSON.parse(body);
 
   console.log(interaction);
-  console.log(JSON.stringify(interaction));
 
   const { type = 0 } = interaction;
 
   // Discord performs Ping interactions to test our application.
   // Type 1 in a request implies a Ping interaction.
   if (type === InteractionTypes.Ping) {
-    return res.status(200).json({ type: 1 });
+    return NextResponse.json({ type: 1 });
   }
 
   // Discord sends a POST request to our application when a user interacts
   if (type === InteractionTypes.ApplicationCommand) {
     try {
-      await bot.events.interactionCreate?.(req.body);
+      await bot.events.interactionCreate?.(interaction);
     } catch (error) {
       logger.error(error);
     }
 
-    return res.status(200).json({
-      type: 5,
-    });
+    return NextResponse.json({ type: 5 });
   }
 
   if (type === InteractionTypes.ModalSubmit) {
     try {
-      await events.modalSubmit?.(req.body);
+      await events.modalSubmit?.(interaction);
     } catch (error) {
       logger.error(error);
     }
 
-    return res.status(200).json({
-      type: 5,
-    });
+    return NextResponse.json({ type: 5 });
   }
 
   if (type === InteractionTypes.MessageComponent) {
     try {
-      await events.componentInteractionCreate?.(req.body);
+      await events.componentInteractionCreate?.(interaction);
     } catch (error) {
       logger.error(error);
     }
 
-    return res.status(200).json({
-      type: 5,
-    });
+    return NextResponse.json({ type: 5 });
   }
 
   // We will return a bad request error as a valid Discord request
   // shouldn't reach here.
-  return res.status(400).json({ error: "bad request" });
+  return NextResponse.json({ error: "bad request" }, { status: 400 });
 }

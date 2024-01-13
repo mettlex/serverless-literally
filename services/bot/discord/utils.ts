@@ -1,6 +1,7 @@
 import commands from "@/services/bot/discord/command/index";
 import bot from "@/services/bot/discord/index";
 import { NextApiRequest } from "next";
+import { NextRequest } from "next/server";
 import nacl from "tweetnacl";
 
 interface RequestValidationOptions {
@@ -23,6 +24,39 @@ export function hexToUint8Array(hex: string) {
 
 /** Validates the request by checking the method and required headers. */
 export function validateRequest(
+  req: NextRequest,
+  options: RequestValidationOptions,
+): RequestValidationResult {
+  const { method } = req;
+
+  if (method !== "POST") {
+    return {
+      error: {
+        status: 405,
+        message: "Method Not Allowed",
+      },
+    };
+  }
+
+  const { headers } = options[method];
+
+  for (const header of headers) {
+    if (!req.headers.get(header.toLowerCase())) {
+      return {
+        error: {
+          status: 400,
+          message: `Missing required header: ${header}`,
+        },
+      };
+    }
+  }
+
+  return {
+    error: null,
+  };
+}
+
+export function _validateRequest(
   req: NextApiRequest,
   options: RequestValidationOptions,
 ): RequestValidationResult {
@@ -57,6 +91,30 @@ export function validateRequest(
 
 /** Verify whether the request is coming from Discord. */
 export async function verifySignature(
+  request: NextRequest,
+): Promise<{ valid: boolean; body: string }> {
+  // Discord sends these headers with every request.
+  const signature = (request.headers.get("x-signature-ed25519") ||
+    request.headers.get("X-Signature-Ed25519")) as string;
+  const timestamp = (request.headers.get("x-signature-timestamp") ||
+    request.headers.get("X-Signature-Timestamp")) as string;
+
+  const publicKey = process.env.PUBLIC_KEY as string;
+
+  const body = await request?.text();
+
+  const valid = nacl.sign.detached.verify(
+    new TextEncoder().encode(timestamp + body),
+    hexToUint8Array(signature),
+    hexToUint8Array(publicKey),
+  );
+
+  console.log({ valid, signature, timestamp, publicKey, body });
+
+  return { valid, body };
+}
+
+export async function _verifySignature(
   request: NextApiRequest,
 ): Promise<{ valid: boolean; body: string }> {
   // Discord sends these headers with every request.
