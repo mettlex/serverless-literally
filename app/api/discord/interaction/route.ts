@@ -20,13 +20,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  console.log("Request body", req.body);
-
   // verifySignature() verifies if the request is coming from Discord.
   // When the request's signature is not valid, we return a 401 and this is
   // important as Discord sends invalid requests to test our verification.
   const { valid, body } = await verifySignature(req);
 
+  logger.info("Request body", body);
   logger.info(`Valid request: ${valid}`);
 
   if (!valid) {
