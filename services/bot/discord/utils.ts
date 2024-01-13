@@ -65,15 +65,17 @@ export async function verifySignature(
   const timestamp = (request.headers["x-signature-timestamp"] ||
     request.headers["X-Signature-Timestamp"]) as string;
 
+  const publicKey = process.env.PUBLIC_KEY as string;
+
   const body = JSON.stringify(request.body);
 
   const valid = nacl.sign.detached.verify(
     new TextEncoder().encode(timestamp + body),
     hexToUint8Array(signature),
-    hexToUint8Array(process.env.PUBLIC_KEY as string),
+    hexToUint8Array(publicKey),
   );
 
-  console.log({ valid, body, signature, timestamp });
+  console.log({ valid, signature, timestamp, publicKey });
 
   return { valid, body };
 }
