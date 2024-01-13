@@ -15,8 +15,7 @@ export async function applyGameRule({
   word,
   brokenRule,
 }: ApplyGameRuleParams) {
-  const { gameSettingsFlags: rules, discordChannelId } =
-    game;
+  const { gameSettingsFlags: rules, discordChannelId } = game;
 
   if (
     rules.wrongWordBreaksChain.enabled &&

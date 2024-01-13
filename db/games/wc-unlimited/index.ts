@@ -9,9 +9,7 @@ import { eq } from "drizzle-orm";
 
 export async function getGameByChannelId(
   channelId: string,
-): Promise<
-  (WordChainUnlimited & { id: number }) | undefined
-> {
+): Promise<(WordChainUnlimited & { id: number }) | undefined> {
   let game;
   let gameInDb;
 
@@ -19,9 +17,7 @@ export async function getGameByChannelId(
     await db
       .select()
       .from(wordChainUnlimited)
-      .where(
-        eq(wordChainUnlimited.discordChannelId, channelId),
-      )
+      .where(eq(wordChainUnlimited.discordChannelId, channelId))
       .limit(1)
   )[0];
 
@@ -48,8 +44,7 @@ export async function setGameByChannelId(
           count: game.count,
           discordChannelId: channelId,
           lastCorrectWord: game.lastCorrectWord,
-          lastCorrectWordPlayerId:
-            game.lastCorrectWordPlayerId,
+          lastCorrectWordPlayerId: game.lastCorrectWordPlayerId,
           longestWord: game.longestWord,
           ruleFlags: game.ruleFlags,
           starterUserId: game.starterUserId,
@@ -68,8 +63,7 @@ export async function setGameByChannelId(
         count: game.count,
         discordChannelId: channelId,
         lastCorrectWord: game.lastCorrectWord,
-        lastCorrectWordPlayerId:
-          game.lastCorrectWordPlayerId,
+        lastCorrectWordPlayerId: game.lastCorrectWordPlayerId,
         longestWord: game.longestWord,
         ruleFlags: game.ruleFlags,
         starterUserId: game.starterUserId,
@@ -77,32 +71,24 @@ export async function setGameByChannelId(
         discordGuildId: game.discordGuildId,
         endedAt: game.endedAt,
       })
-      .where(
-        eq(wordChainUnlimited.discordChannelId, channelId),
-      );
+      .where(eq(wordChainUnlimited.discordChannelId, channelId));
   } catch (error) {
     console.error(error);
   }
 }
 
-export async function deleteGameByChannelId(
-  channelId: string,
-): Promise<void> {
+export async function deleteGameByChannelId(channelId: string): Promise<void> {
   const game = await getGameByChannelId(channelId);
 
   if (!game) {
     return;
   }
 
-  await db
-    .delete(chainedWords)
-    .where(eq(chainedWords.chainId, game.id));
+  await db.delete(chainedWords).where(eq(chainedWords.chainId, game.id));
 
   await db
     .delete(wordChainUnlimited)
-    .where(
-      eq(wordChainUnlimited.discordChannelId, channelId),
-    );
+    .where(eq(wordChainUnlimited.discordChannelId, channelId));
 }
 
 export async function getChainedWordsByChannelId(
@@ -163,7 +149,5 @@ export async function deleteChainedWordsByChannelId(
     return;
   }
 
-  await db
-    .delete(chainedWords)
-    .where(eq(chainedWords.chainId, game.id));
+  await db.delete(chainedWords).where(eq(chainedWords.chainId, game.id));
 }

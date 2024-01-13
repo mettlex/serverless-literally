@@ -65,10 +65,7 @@ type HandleGameParams = {
   word: string;
 };
 
-export async function handleGame({
-  interaction,
-  word,
-}: HandleGameParams) {
+export async function handleGame({ interaction, word }: HandleGameParams) {
   if (
     !interaction.channel_id ||
     !interaction.guild_id ||
@@ -87,19 +84,14 @@ export async function handleGame({
   if (!playerName) return;
 
   try {
-    const game = await getGameByChannelId(
-      interaction.channel_id,
-    );
+    const game = await getGameByChannelId(interaction.channel_id);
 
     logger.info({ game });
 
     if (!game) {
-      await bot.rest.sendFollowupMessage(
-        interaction.token,
-        {
-          content: `### There is no game running currently in this channel.`,
-        },
-      );
+      await bot.rest.sendFollowupMessage(interaction.token, {
+        content: `### There is no game running currently in this channel.`,
+      });
 
       return;
     }
@@ -109,27 +101,20 @@ export async function handleGame({
     const correctSpelling = await checkSpell(word);
 
     if (!correctSpelling) {
-      await bot.rest.sendFollowupMessage(
-        interaction.token,
-        {
-          content: `> **${word}**\nThe word is incorrect according to Wiktionary.\nCurrent word: **${game.lastCorrectWord}**`,
-          components: [
-            {
-              type: MessageComponentTypes.ActionRow,
-              components: [
-                resetCounter(),
-                player(playerName),
-              ],
-            },
-          ],
-        },
-      );
+      await bot.rest.sendFollowupMessage(interaction.token, {
+        content: `> **${word}**\nThe word is incorrect according to Wiktionary.\nCurrent word: **${game.lastCorrectWord}**`,
+        components: [
+          {
+            type: MessageComponentTypes.ActionRow,
+            components: [resetCounter(), player(playerName)],
+          },
+        ],
+      });
 
       await applyGameRule({
         game,
         word,
-        brokenRule:
-          game.gameSettingsFlags.wrongWordBreaksChain,
+        brokenRule: game.gameSettingsFlags.wrongWordBreaksChain,
       });
 
       return;
@@ -145,31 +130,23 @@ export async function handleGame({
 
     //#region Rule: Last letter of the previous word must be the first letter of the current word
 
-    const lastLetter =
-      game.lastCorrectWord[game.lastCorrectWord.length - 1];
+    const lastLetter = game.lastCorrectWord[game.lastCorrectWord.length - 1];
 
     if (lastLetter !== word[0]) {
-      await bot.rest.sendFollowupMessage(
-        interaction.token,
-        {
-          content: `> **${word}**\nThe word does not start with the last letter (${lastLetter}) of the previous word.\nCurrent word: **${game.lastCorrectWord}**`,
-          components: [
-            {
-              type: MessageComponentTypes.ActionRow,
-              components: [
-                resetCounter(),
-                player(playerName),
-              ],
-            },
-          ],
-        },
-      );
+      await bot.rest.sendFollowupMessage(interaction.token, {
+        content: `> **${word}**\nThe word does not start with the last letter (${lastLetter}) of the previous word.\nCurrent word: **${game.lastCorrectWord}**`,
+        components: [
+          {
+            type: MessageComponentTypes.ActionRow,
+            components: [resetCounter(), player(playerName)],
+          },
+        ],
+      });
 
       await applyGameRule({
         game,
         word,
-        brokenRule:
-          game.gameSettingsFlags.wrongWordBreaksChain,
+        brokenRule: game.gameSettingsFlags.wrongWordBreaksChain,
       });
 
       return;
@@ -185,22 +162,19 @@ export async function handleGame({
       );
 
       if (chainedWords.includes(word)) {
-        await bot.rest.sendFollowupMessage(
-          interaction.token,
-          {
-            content: `> **${word}**\nThe word was used before.\nCurrent word: **${game.lastCorrectWord}**`,
-            components: [
-              {
-                type: MessageComponentTypes.ActionRow,
-                components: [
-                  resetCounter(game.count),
-                  player(playerName),
-                  chainWordBtn(),
-                ],
-              },
-            ],
-          },
-        );
+        await bot.rest.sendFollowupMessage(interaction.token, {
+          content: `> **${word}**\nThe word was used before.\nCurrent word: **${game.lastCorrectWord}**`,
+          components: [
+            {
+              type: MessageComponentTypes.ActionRow,
+              components: [
+                resetCounter(game.count),
+                player(playerName),
+                chainWordBtn(),
+              ],
+            },
+          ],
+        });
 
         return;
       }
@@ -211,26 +185,20 @@ export async function handleGame({
     //#region Rule: Different player in each turn
 
     if (game.gameSettingsFlags.differentPlayerInEachTurn) {
-      if (
-        game.lastCorrectWordPlayerId ===
-        interaction.member.user.id
-      ) {
-        await bot.rest.sendFollowupMessage(
-          interaction.token,
-          {
-            content: `> **${word}**\nYou already played your turn. Please wait for other players to play their turn.\nCurrent word: **${game.lastCorrectWord}**`,
-            components: [
-              {
-                type: MessageComponentTypes.ActionRow,
-                components: [
-                  resetCounter(game.count),
-                  player(playerName),
-                  chainWordBtn(),
-                ],
-              },
-            ],
-          },
-        );
+      if (game.lastCorrectWordPlayerId === interaction.member.user.id) {
+        await bot.rest.sendFollowupMessage(interaction.token, {
+          content: `> **${word}**\nYou already played your turn. Please wait for other players to play their turn.\nCurrent word: **${game.lastCorrectWord}**`,
+          components: [
+            {
+              type: MessageComponentTypes.ActionRow,
+              components: [
+                resetCounter(game.count),
+                player(playerName),
+                chainWordBtn(),
+              ],
+            },
+          ],
+        });
 
         return;
       }
@@ -242,8 +210,7 @@ export async function handleGame({
 
     game.count += 1;
     game.lastCorrectWord = word;
-    game.lastCorrectWordPlayerId =
-      interaction.member.user.id;
+    game.lastCorrectWordPlayerId = interaction.member.user.id;
 
     await setGameByChannelId(interaction.channel_id, game);
 

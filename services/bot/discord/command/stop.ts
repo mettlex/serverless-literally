@@ -1,14 +1,9 @@
-import {
-  deleteGameByChannelId
-} from "@/db/games/wc-unlimited";
+import { deleteGameByChannelId } from "@/db/games/wc-unlimited";
 import { games } from "@/games";
 import { Command } from "@/services/bot/discord/command/index";
 import bot from "@/services/bot/discord/index";
 import { sleep } from "@/utils";
-import {
-  ApplicationCommandOptionTypes,
-  Permissions,
-} from "@discordeno/bot";
+import { ApplicationCommandOptionTypes, Permissions } from "@discordeno/bot";
 
 const gameOptions = [];
 
@@ -35,49 +30,31 @@ export const command: Command = {
     },
   ],
   execute: async (interaction) => {
-    await bot.rest.sendInteractionResponse(
-      interaction.id,
-      interaction.token,
-      {
-        type: 5,
-      },
-    );
+    await bot.rest.sendInteractionResponse(interaction.id, interaction.token, {
+      type: 5,
+    });
 
     await sleep(200);
 
     switch (interaction.data?.options?.[0].value) {
       case games.wordChainUnlimited.key:
-        if (
-          !interaction.channel_id ||
-          !interaction.member?.permissions
-        )
-          break;
+        if (!interaction.channel_id || !interaction.member?.permissions) break;
 
-        const permissions = new Permissions(
-          interaction.member.permissions,
-        );
+        const permissions = new Permissions(interaction.member.permissions);
 
         if (!permissions.has("MANAGE_CHANNELS")) {
-          await bot.rest.sendFollowupMessage(
-            interaction.token,
-            {
-              content: `### You don't have "Manage Channels" permission.`,
-            },
-          );
+          await bot.rest.sendFollowupMessage(interaction.token, {
+            content: `### You don't have "Manage Channels" permission.`,
+          });
           break;
         }
 
         try {
-          await deleteGameByChannelId(
-            interaction.channel_id,
-          );
+          await deleteGameByChannelId(interaction.channel_id);
 
-          await bot.rest.sendFollowupMessage(
-            interaction.token,
-            {
-              content: `### The game has been stopped.`,
-            },
-          );
+          await bot.rest.sendFollowupMessage(interaction.token, {
+            content: `### The game has been stopped.`,
+          });
         } catch (error) {
           console.error(error);
         }

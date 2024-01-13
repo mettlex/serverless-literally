@@ -47,8 +47,7 @@ export const handler: Modal = {
       (
         interaction.data?.components?.[0]
           .components?.[0] as DiscordInputTextComponent
-      )?.value ||
-      (interaction.data?.options?.[0]?.value as string);
+      )?.value || (interaction.data?.options?.[0]?.value as string);
 
     word = word?.trim()?.toLowerCase()?.split(" ").at(-1);
 
@@ -62,13 +61,9 @@ export const handler: Modal = {
       return;
     }
 
-    await bot.rest.sendInteractionResponse(
-      interaction.id,
-      interaction.token,
-      {
-        type: 5,
-      },
-    );
+    await bot.rest.sendInteractionResponse(interaction.id, interaction.token, {
+      type: 5,
+    });
 
     await handleGame({ interaction, word });
   },

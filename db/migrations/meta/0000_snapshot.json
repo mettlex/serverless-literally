@@ -78,12 +78,8 @@
           "name": "literally-chained-words_chain_id_literally-wc-unlimited_id_fk",
           "tableFrom": "literally-chained-words",
           "tableTo": "literally-wc-unlimited",
-          "columnsFrom": [
-            "chain_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["chain_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -91,9 +87,7 @@
       "compositePrimaryKeys": {
         "literally-chained-words_id": {
           "name": "literally-chained-words_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {}
@@ -185,9 +179,7 @@
       "compositePrimaryKeys": {
         "literally-wc-unlimited_id": {
           "name": "literally-wc-unlimited_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {}

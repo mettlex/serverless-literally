@@ -105,13 +105,9 @@ export const handler: Modal = {
     )
       return;
 
-    await bot.rest.sendInteractionResponse(
-      interaction.id,
-      interaction.token,
-      {
-        type: 5,
-      },
-    );
+    await bot.rest.sendInteractionResponse(interaction.id, interaction.token, {
+      type: 5,
+    });
 
     await sleep(200);
 
@@ -138,30 +134,22 @@ export const handler: Modal = {
       const correctSpelling = await checkSpell(word);
 
       if (!correctSpelling) {
-        await bot.rest.sendFollowupMessage(
-          interaction.token,
-          {
-            content: `> **${word}**\nThe word is incorrect according to Wiktionary.`,
-            components: [
-              {
-                type: MessageComponentTypes.ActionRow,
-                components: [
-                  resetCounter(),
-                  player(playerName),
-                ],
-              },
-            ],
-          },
-        );
+        await bot.rest.sendFollowupMessage(interaction.token, {
+          content: `> **${word}**\nThe word is incorrect according to Wiktionary.`,
+          components: [
+            {
+              type: MessageComponentTypes.ActionRow,
+              components: [resetCounter(), player(playerName)],
+            },
+          ],
+        });
 
         return;
       }
 
       if (!correctSpelling) return;
 
-      const game = await getGameByChannelId(
-        interaction.channel_id,
-      );
+      const game = await getGameByChannelId(interaction.channel_id);
 
       logger.info({ game });
 
@@ -172,8 +160,7 @@ export const handler: Modal = {
           count: 1,
 
           lastCorrectWord: word,
-          lastCorrectWordPlayerId:
-            interaction.member.user.id,
+          lastCorrectWordPlayerId: interaction.member.user.id,
 
           starterUserId: interaction.member.user.id,
 
@@ -182,20 +169,16 @@ export const handler: Modal = {
 
           longestWord: word,
 
-          ruleFlags:
-            WordChainUnlimitedExtra.fromGameSettingsFlagsToBitField(
-              WordChainUnlimitedExtra.defaultGameSettingsFlags,
-            ),
+          ruleFlags: WordChainUnlimitedExtra.fromGameSettingsFlagsToBitField(
+            WordChainUnlimitedExtra.defaultGameSettingsFlags,
+          ),
 
           endedAt: null,
 
           ...extra,
         };
 
-        await setGameByChannelId(
-          interaction.channel_id,
-          newGame,
-        );
+        await setGameByChannelId(interaction.channel_id, newGame);
 
         await addChainedWordByChannelId({
           channelId: interaction.channel_id,
@@ -204,30 +187,24 @@ export const handler: Modal = {
           discordMessageId: interaction.message?.id || "",
         });
 
-        await bot.rest.sendFollowupMessage(
-          interaction.token,
-          {
-            content: `> **${word}**`,
-            components: [
-              {
-                type: MessageComponentTypes.ActionRow,
-                components: [
-                  counter(1),
-                  player(playerName),
-                  chainWordBtn(),
-                  definition(word),
-                ],
-              },
-            ],
-          },
-        );
+        await bot.rest.sendFollowupMessage(interaction.token, {
+          content: `> **${word}**`,
+          components: [
+            {
+              type: MessageComponentTypes.ActionRow,
+              components: [
+                counter(1),
+                player(playerName),
+                chainWordBtn(),
+                definition(word),
+              ],
+            },
+          ],
+        });
       } else if (game.endedAt === null) {
-        await bot.rest.sendFollowupMessage(
-          interaction.token,
-          {
-            content: `### There is already a game running in this channel. You may use \`/stop\` command if you have "Manage Channels" permission.`,
-          },
-        );
+        await bot.rest.sendFollowupMessage(interaction.token, {
+          content: `### There is already a game running in this channel. You may use \`/stop\` command if you have "Manage Channels" permission.`,
+        });
       }
     } catch (error) {
       console.error(error);

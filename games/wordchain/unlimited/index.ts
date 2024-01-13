@@ -1,7 +1,7 @@
 import { WordChainUnlimitedInDatabase } from "@/db/schema/word-chain-unlimited-schema";
 
-export type WordChainUnlimited =
-  WordChainUnlimitedInDatabase & WordChainUnlimitedExtra;
+export type WordChainUnlimited = WordChainUnlimitedInDatabase &
+  WordChainUnlimitedExtra;
 
 export class WordChainUnlimitedExtra {
   static defaultGameSettingsFlags = {
@@ -28,9 +28,7 @@ export class WordChainUnlimitedExtra {
     )) {
       const bit = bitfield & 1n;
 
-      flags[
-        name as keyof WordChainUnlimitedGameSettingsFlags
-      ] = {
+      flags[name as keyof WordChainUnlimitedGameSettingsFlags] = {
         ...setting,
         enabled: bit === 1n,
       };
@@ -61,9 +59,7 @@ export class WordChainUnlimitedExtra {
     return bitfield;
   }
 
-  static overwriteGameSettingsFlags(
-    bitmask: bigint,
-  ): bigint {
+  static overwriteGameSettingsFlags(bitmask: bigint): bigint {
     return (
       WordChainUnlimitedExtra.fromGameSettingsFlagsToBitField(
         WordChainUnlimitedExtra.defaultGameSettingsFlags,

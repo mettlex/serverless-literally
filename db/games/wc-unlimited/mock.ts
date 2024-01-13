@@ -1,14 +1,8 @@
 import { WordChainUnlimited } from "@/games/wordchain/unlimited";
 
-export const mockGameMap = new Map<
-  string,
-  WordChainUnlimited | undefined
->();
+export const mockGameMap = new Map<string, WordChainUnlimited | undefined>();
 
-export const mockChainedWordsMap = new Map<
-  string,
-  string[]
->();
+export const mockChainedWordsMap = new Map<string, string[]>();
 
 export async function getGameByChannelId(
   channelId: string,
@@ -34,9 +28,7 @@ export async function setGameByChannelId(
   //#endregion Mock
 }
 
-export async function deleteGameByChannelId(
-  channelId: string,
-): Promise<void> {
+export async function deleteGameByChannelId(channelId: string): Promise<void> {
   //#region Mock
   mockChainedWordsMap.delete(channelId);
   mockGameMap.delete(channelId);
@@ -68,8 +60,7 @@ export async function addChainedWordByChannelId(
   }
 
   //#region Mock
-  const chainedWords =
-    mockChainedWordsMap.get(channelId) ?? [];
+  const chainedWords = mockChainedWordsMap.get(channelId) ?? [];
 
   chainedWords.push(word);
 
