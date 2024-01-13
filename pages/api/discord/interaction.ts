@@ -20,6 +20,8 @@ export default async function handler(
     return res.status(error.status).json({ error: error.message });
   }
 
+  console.log("Request body", req.body);
+
   // verifySignature() verifies if the request is coming from Discord.
   // When the request's signature is not valid, we return a 401 and this is
   // important as Discord sends invalid requests to test our verification.

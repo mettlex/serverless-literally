@@ -75,7 +75,7 @@ export async function verifySignature(
     hexToUint8Array(publicKey),
   );
 
-  console.log({ valid, signature, timestamp, publicKey });
+  console.log({ valid, signature, timestamp, publicKey, body });
 
   return { valid, body };
 }
