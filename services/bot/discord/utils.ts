@@ -60,8 +60,8 @@ export async function verifySignature(
   request: NextApiRequest,
 ): Promise<{ valid: boolean; body: string }> {
   // Discord sends these headers with every request.
-  const signature = request.headers["x-signature-ed25519"] as string;
-  const timestamp = request.headers["x-signature-timestamp"] as string;
+  const signature = (request.headers["x-signature-ed25519"] || request.headers["X-Signature-Ed25519"]) as string;
+  const timestamp = (request.headers["x-signature-timestamp"] || request.headers["X-Signature-Timestamp"]) as string;
 
   const body = JSON.stringify(request.body);
 
@@ -70,6 +70,8 @@ export async function verifySignature(
     hexToUint8Array(signature),
     hexToUint8Array(process.env.PUBLIC_KEY as string),
   );
+
+  console.log({ valid, body, signature, timestamp });
 
   return { valid, body };
 }
