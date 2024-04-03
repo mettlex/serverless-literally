@@ -2,7 +2,7 @@ import { REST } from "@/services/rest/index";
 import { createGatewayManager } from "@discordeno/gateway";
 
 export const GATEWAY = createGatewayManager({
-  token: process.env.TOKEN || "",
+  token: process.env.DISCORD_TOKEN || "",
   events: {},
   shardsPerWorker: 10,
   totalWorkers: 5,

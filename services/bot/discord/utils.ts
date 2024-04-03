@@ -99,7 +99,7 @@ export async function verifySignature(
   const timestamp = (request.headers.get("x-signature-timestamp") ||
     request.headers.get("X-Signature-Timestamp")) as string;
 
-  const publicKey = process.env.PUBLIC_KEY as string;
+  const publicKey = process.env.DISCORD_PUBLIC_KEY as string;
 
   const body = await request?.text();
 
@@ -123,7 +123,7 @@ export async function _verifySignature(
   const timestamp = (request.headers["x-signature-timestamp"] ||
     request.headers["X-Signature-Timestamp"]) as string;
 
-  const publicKey = process.env.PUBLIC_KEY as string;
+  const publicKey = process.env.DISCORD_PUBLIC_KEY as string;
 
   const body = JSON.stringify(request.body);
 

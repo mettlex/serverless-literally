@@ -1,0 +1,39 @@
+---
+services:
+  literally_database:
+    image: mysql:8.3
+    container_name: literally_database
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    env_file:
+      - .env
+    environment:
+      - MYSQL_DATABASE=${DATABASE}
+      - MYSQL_USER=${DATABASE_USERNAME}
+      - MYSQL_PASSWORD=${DATABASE_PASSWORD}
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    volumes:
+      - ./mysqldata:/var/lib/mysql
+    networks:
+      - literally-app-network
+
+  literally_phpmyadmin:
+    image: phpmyadmin:5.2
+    restart: always
+    depends_on:
+      - literally_database
+    ports:
+      - 0.0.0.0:8002:80
+    env_file:
+      - .env
+    environment:
+      - PMA_HOST=${DATABASE_HOST}
+      - PMA_PORT=${DATABASE_PORT}
+    networks:
+      - literally-app-network
+
+networks:
+  literally-app-network:
+    driver: bridge

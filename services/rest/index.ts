@@ -1,7 +1,7 @@
 import { createRestManager } from "@discordeno/rest";
 
-export const AUTHORIZATION = process.env.AUTHORIZATION;
+export const AUTHORIZATION = process.env.DISCORD_AUTHORIZATION;
 
 export const REST = createRestManager({
-  token: process.env.TOKEN,
+  token: process.env.DISCORD_TOKEN,
 });

@@ -5,9 +5,9 @@ import { SlashCommand, SlashCreator } from "slash-create";
 
 async function main() {
   const creator = new SlashCreator({
-    applicationID: process.env.APP_ID as string,
-    publicKey: process.env.PUBLIC_KEY as string,
-    token: process.env.TOKEN as string,
+    applicationID: process.env.DISCORD_APP_ID as string,
+    publicKey: process.env.DISCORD_PUBLIC_KEY as string,
+    token: process.env.DISCORD_TOKEN as string,
   });
 
   creator.on("debug", (message) => {
@@ -55,7 +55,7 @@ async function oldMain() {
       {
         method: "GET",
         headers: {
-          Authorization: `Bot ${process.env.TOKEN}`,
+          Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
         },
       },
     );
@@ -88,7 +88,7 @@ async function oldMain() {
         {
           method: "GET",
           headers: {
-            Authorization: `Bot ${process.env.TOKEN}`,
+            Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
           },
         },
       );
